@@ -1,7 +1,7 @@
 # Nextcloud Docker image (extended)
 
 [![](https://img.shields.io/badge/Docker-Hub-green)](https://hub.docker.com/repository/docker/r0wi/nextcloud-extended)
-![Docker Image Version (latest semver)](https://img.shields.io/docker/v/r0wi/nextcloud-extended)
+![Docker Image Version (latest semver)](https://img.shields.io/docker/v/r0wi/nextcloud-extended?sort=semver)
 
 A docker image based on the official Nextcloud image with additional tools and dependencies.
 
@@ -27,3 +27,7 @@ $ docker run -d -p 8080:80 r0wi/nextcloud-extended:24-apache
 ```
 
 Please refer to the [official documentation](https://github.com/nextcloud/docker) for further details.
+
+## How the image is updated
+
+An update script runs every night to ensure that the image inherits all changes from the official Nextcloud image. The script itself searches for all `apache`-based Nextcloud images on the Docker Hub which are updated within the last 14 days. These images will be taken as base images.

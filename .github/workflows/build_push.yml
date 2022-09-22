@@ -6,18 +6,32 @@ on:
   workflow_dispatch:
 
 jobs:
+  get_base_tags:
+    runs-on: ubuntu-latest
+    outputs:
+      tags: ${{ steps.get-base-tags.outputs.tags }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Get base tags
+        id: get-base-tags
+        run: |
+          tags=$(./get_base_tags.sh --json)
+          echo "::set-output name=tags::$tags"
   build_push:
     runs-on: ubuntu-latest
+    needs: get_base_tags
+    # Dynamically generate a job for each tag we found in step before
+    strategy:
+      matrix:
+        tag: ${{ fromJson(needs.get_base_tags.outputs.tags) }}
     steps:
       - name: Checkout
         uses: actions/checkout@v3
-      - name: Cache docker layers
-        uses: satackey/action-docker-layer-caching@v0.0.11
-        continue-on-error: true
       - name: Login to DockerHub
         uses: docker/login-action@v2
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
-      - name: Build and push
-        run: make build-push
+      - name: Build and push ${{ matrix.tag }}
+        run: ./build.sh --build --push --base_tag ${{ matrix.tag }}
