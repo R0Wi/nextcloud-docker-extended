@@ -17,7 +17,7 @@ jobs:
         id: get-base-tags
         run: |
           tags=$(./get_base_tags.sh --json)
-          echo "::set-output name=tags::$tags"
+          echo "tags=$tags" >> $GITHUB_OUTPUT
   build_push:
     runs-on: ubuntu-latest
     needs: get_base_tags
@@ -34,4 +34,4 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
       - name: Build and push ${{ matrix.tag }}
-        run: ./build.sh --build --push --base_tag ${{ matrix.tag }}
+        run: ./build.sh --build --push --base-tag ${{ matrix.tag }}

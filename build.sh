@@ -32,7 +32,7 @@ while [[ $# -gt 0 ]]; do
             PUSH="true"
             shift
             ;;
-        -t|--base_tag)
+        -t|--base-tag)
             BASE_TAG="$2"
             shift
             shift
