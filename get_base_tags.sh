@@ -1,6 +1,7 @@
 #!/bin/bash
 
 set -e
+shopt -s inherit_errexit
 
 TAGS_URI_BASE="https://hub.docker.com/v2/repositories/library/nextcloud/tags?page_size=1000&name=apache"
 
@@ -46,5 +47,10 @@ if [ "$TEXT" = "true" ]; then
 fi
 
 if [ "$JSON" = "true" ]; then
-    get_docker_tags | jq -R -s -c 'split("\n")[:-1]'
+    txt_tags="$(get_docker_tags)"
+    if [ -n "$txt_tags" ]; then
+        echo "$txt_tags" | jq -R -s -c 'split("\n")[:-1]'
+    else
+        echo "[\"none-found\"]"
+    fi
 fi

@@ -5,6 +5,11 @@ set -e
 SCRIPT_PATH="$( cd "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )"
 BASE_IMAGE="nextcloud"
 
+function error {
+  echo "Error in script: $(caller)."
+  exit 1
+}
+
 function build_image() {
     local tag="$1"
     local baseImage="$BASE_IMAGE:$tag"
@@ -20,6 +25,8 @@ function push_image() {
     docker push "$image"
 }
 
+trap error ERR
+
 # Parse script args
 while [[ $# -gt 0 ]]; do
     key="$1"
@@ -34,6 +41,10 @@ while [[ $# -gt 0 ]]; do
             ;;
         -t|--base-tag)
             BASE_TAG="$2"
+            if [ -z "$BASE_TAG" ]; then
+                echo "No base tag specified. Use -t to specify a base tag."
+                exit 1
+            fi
             shift
             shift
             ;;
@@ -49,9 +60,13 @@ if [ "$BUILD" = "false" ] && [ "$PUSH" = "false" ]; then
     exit 1
 fi
 
-if [ -z "$BASE_TAG" ]; then
-    echo "No base tag specified. Use -t to specify a base tag."
-    exit 1
+# This is the case if get_base_tags.sh did not find any base
+# images which have been touched within the last 14 days. It will
+# then just print ["none-found"]. In that case 
+# it's ok to just skip the build and don't let the GH actions fail.
+if [ "$BASE_TAG" = "none-found" ] && [ "$CI" = "true" ]; then
+    echo "[WARNING] No matching base tags found, skipping build."
+    exit 0
 fi
 
 # Build / push single image
